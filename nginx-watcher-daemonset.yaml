@@ -17,7 +17,7 @@ spec:
       serviceAccountName: iptables-watcher-sa  # Reference the service account
       containers:
         - name: iptables-container
-          image: lachlanevenson/k8s-kubectl:latest  # Image with kubectl pre-installed
+          image: portforward:0.1  # Image with kubectl pre-installed
           securityContext:
             privileged: true
             capabilities:
