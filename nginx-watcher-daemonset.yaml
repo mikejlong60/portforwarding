@@ -1,27 +1,33 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: nginx-watcher
+  name: iptables-watcher
   labels:
-    app: nginx-watcher
+    app: iptables-watcher
 spec:
   selector:
     matchLabels:
-      app: nginx-watcher
+      app: iptables-watcher
   template:
     metadata:
       labels:
-        app: nginx-watcher
+        app: iptables-watcher
     spec:
-      serviceAccountName: nginx-watcher-sa  # Reference the service account
+      hostNetwork: true
+      serviceAccountName: iptables-watcher-sa  # Reference the service account
       containers:
-        - name: nginx-watcher
+        - name: iptables-container
           image: lachlanevenson/k8s-kubectl:latest  # Image with kubectl pre-installed
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
           command: ["/bin/sh", "-c"]
           args:
             - |
               while true; do
-                # Get the list of running pods created by the "my-nginx" deployment
+                # Get the list of running pods created by the "iptables-watcher" deployment
                 PODS=$(kubectl get pods --selector=run=my-nginx --field-selector=status.phase=Running -o name);
                 if [ -n "$PODS" ]; then
                   echo "Detected new Nginx pod(s): $PODS";
@@ -36,12 +42,12 @@ spec:
       volumes:
         - name: script-volume
           configMap:
-            name: nginx-watcher-script-config
+            name: iptables-watcher-script-config
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-watcher-script-config
+  name: iptables-watcher-script-config
 data:
   your-script.sh: |
     #!/bin/sh

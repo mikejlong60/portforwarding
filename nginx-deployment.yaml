@@ -15,11 +15,6 @@ spec:
       containers:
         - name: my-nginx
           image: nginx
-          securityContext:
-            privileged: true
-            capabilities:
-              add:
-                - NET_ADMIN
           ports:
             - containerPort: 80
 

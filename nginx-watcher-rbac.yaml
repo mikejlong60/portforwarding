@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: nginx-watcher-sa
+  name: iptables-watcher-sa
   namespace: default  # Change if using a different namespace
 
 ---
@@ -30,6 +30,6 @@ roleRef:
   name: pod-watcher-role
 subjects:
   - kind: ServiceAccount
-    name: nginx-watcher-sa  # Link to the service account
+    name: iptables-watcher-sa  # Link to the service account
     namespace: default      # Make sure this matches the namespace
 
