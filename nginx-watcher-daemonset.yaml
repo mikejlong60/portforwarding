@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-watcher
+  labels:
+    app: nginx-watcher
+spec:
+  selector:
+    matchLabels:
+      app: nginx-watcher
+  template:
+    metadata:
+      labels:
+        app: nginx-watcher
+    spec:
+      serviceAccountName: nginx-watcher-sa  # Reference the service account
+      containers:
+        - name: nginx-watcher
+          image: lachlanevenson/k8s-kubectl:latest  # Image with kubectl pre-installed
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              while true; do
+                # Get the list of running pods created by the "my-nginx" deployment
+                PODS=$(kubectl get pods --selector=run=my-nginx --field-selector=status.phase=Running -o name);
+                if [ -n "$PODS" ]; then
+                  echo "Detected new Nginx pod(s): $PODS";
+                  /path/to/your-script.sh;  # Run the custom script when pod starts
+                fi;
+                sleep 10;  # Poll every 10 seconds
+              done;
+          volumeMounts:
+            - name: script-volume
+              mountPath: /path/to/your-script.sh
+              subPath: your-script.sh
+      volumes:
+        - name: script-volume
+          configMap:
+            name: nginx-watcher-script-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-watcher-script-config
+data:
+  your-script.sh: |
+    #!/bin/sh
+    echo "Running custom script because an Nginx pod has started..."
+    # Add your script logic here
+    # Example: Send notification, reconfigure services, etc.

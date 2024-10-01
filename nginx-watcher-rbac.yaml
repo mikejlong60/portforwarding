@@ -1,0 +1,35 @@
+# ServiceAccount for DaemonSet to use
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-watcher-sa
+  namespace: default  # Change if using a different namespace
+
+---
+# Role with permissions to list and watch pods
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default  # Use the appropriate namespace
+  name: pod-watcher-role
+rules:
+  - apiGroups: [""]  # "" refers to the core API group
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+# Bind the Role to the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-watcher-rolebinding
+  namespace: default  # Use the appropriate namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-watcher-role
+subjects:
+  - kind: ServiceAccount
+    name: nginx-watcher-sa  # Link to the service account
+    namespace: default      # Make sure this matches the namespace
+
